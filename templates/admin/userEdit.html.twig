@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	Détail de l'utilisateur "{{ userFirstName }}
+	{{ userLastName }}"
+{% endblock %}
+
+{% block body %}
+	<div class="container mt-4" id="divUserDetail">
+		<h2 class="display-6 text-center">Détail de l'utilisateur "<span class="title">{{ userFirstName }}
+				{{ userLastName }}</span>"</h2>
+		<hr class="my-4">
+		{{ form_start(formUser) }}
+		{{ form_row(formUser.email, {'label': 'Email'}) }}
+		{{ form_row(formUser.firstName, {'label': 'Prénom'}) }}
+		{{ form_row(formUser.lastName, {'label': 'Nom'}) }}
+		{{ form_row(formUser.phone, {'label': 'Téléphone'}) }}
+		{{ form_row(formUser.street, {'label': 'Rue'}) }}
+		{{ form_row(formUser.streetNum, {'label': 'Numéro de rue'}) }}
+		{{ form_row(formUser.postalCode, {'label': 'Code Postal'}) }}
+		{{ form_row(formUser.locality, {'label': 'Localité'}) }}
+		{{ form_row(formUser.country, {'label': 'Pays'}) }}
+		<button class="btn btn-success" type="submit" id="userEditFormSubmit">Modifier</button>
+		<a class="btn btn-info" href="/admin/{{ userId }}/editUserPassword" role="button">Modifier le mot de passe</a>
+		<a class="btn btn-info" href="{{ path('admin_usersList') }}" role="button">Retour</a>
+		{{ form_end(formUser)}}
+	</div>
+{% endblock %}
+
+{% block javascripts %}
+	<script type="text/javascript">
+		$(document).ready(function () {
+$("form").submit(function () {
+$.ajax({
+url: "editUser",
+type: "POST",
+data: $("form").serialize(),
+success: function (response) {
+$('#flashContainer').append('<div class="container-fluid alert ' + response.alert + ' fixed-top rounded-0 text-center" role="alert">' + response.message + '</div>');
+if (response.alert == 'alert-success') {
+document.title = 'Détail de l\'utilisateur "' + $('#profil_modification_firstName').val() + ' ' + $('#profil_modification_lastName').val() + '"'
+$('.title').text($('#profil_modification_firstName').val() + ' ' + $('#profil_modification_lastName').val());
+}
+$('.modal').modal('hide');
+$(".alert").delay(5000).slideUp(600);
+},
+error: function (response) {
+alert(response.message);
+}
+});
+return false;
+});
+});
+	</script>
+{% endblock %}

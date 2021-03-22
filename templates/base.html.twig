@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+		<meta charset="UTF-8">
+		<title>
+			{% block title %}Bienvenue !
+			{% endblock %}
+		</title>
+
+		<link href="https://bootswatch.com/4/flatly/bootstrap.min.css" rel="stylesheet">
+		<link crossorigin="anonymous" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" rel="stylesheet">
+		<link href="//cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" rel="stylesheet"/>
+		<link href="/css/style.css" rel="stylesheet"/>
+
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+		<script src="//cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+		<script src="https://cdn.datatables.net/fixedheader/3.1.5/js/dataTables.fixedHeader.min.js"></script>
+		<script src="//cdn.datatables.net/plug-ins/1.10.19/sorting/date-euro.js"></script>
+		<script src="http://malsup.github.com/jquery.form.js"></script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js'></script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/locale/fr.min.js'></script>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.4.0/fullcalendar.css"/>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.4.0/fullcalendar.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+		{% block stylesheets %}{% endblock %}
+	</head>
+
+	<body>
+		<div id="overlay">
+			<div class="cv-spinner">
+				<span class="spinner"></span>
+			</div>
+		</div>
+		{% if is_granted('ROLE_USER') %}
+			<nav class="navbar navbar-expand-lg navbar-light bg-light">
+				<a class="navbar-brand" href="/">
+					<a class="navbar-brand" href="#"><img alt="Logo" src="/images/logo.png"/></a>
+				</a>
+				<button aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler" data-target="#navbarColor01" data-toggle="collapse" type="button">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarColor01">
+					<ul class="navbar-nav mr-auto">
+						<li class="nav-item">
+							<a class="nav-link" href="{{ path('member_home') }}">
+								<i class="fas fa-list"></i>
+								Liste des véhicules
+							</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="{{ path('member_userRents') }}">
+								<i class="fas fa-calendar-times"></i>
+								Réservations
+							</a>
+						</li>
+					</ul>
+					<ul class="navbar-nav ml-auto">
+						<li class="nav-item">
+							<a class="nav-link" href="{{ path('help') }}">
+								<i class="fas fa-info-circle"></i>
+								Aide
+							</a>
+						</li>
+						<li class="nav-item">
+							<a href="{{ path('member_profil') }}" class="nav-link">
+								<i class="fas fa-user"></i>
+								<span id="userNavItem">
+									{{ app.user.firstName }}
+									{{ app.user.lastName }}</span>
+							</a>
+						</li>
+						<li class="nav-item">
+							<a href="{{ path('security_logout') }}" class="nav-link">
+								Se déconnecter
+								<i class="fas fa-sign-out-alt"></i>
+							</a>
+						</li>
+					</ul>
+				</div>
+			</nav>
+		{% elseif is_granted('ROLE_ADMIN') %}
+			<nav class="navbar navbar-expand-lg navbar-light bg-light">
+				<a class="navbar-brand" href="#">
+					<a class="navbar-brand" href="#"><img id="admin_logo" alt="Logo" src="/images/logo.png"/></a>
+				</a>
+				<button aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler" data-target="#navbarColor01" data-toggle="collapse" type="button">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarColor01">
+					<ul class="navbar-nav mr-auto">
+						<li class="nav-item dropdown">
+							<a aria-expanded="false" aria-haspopup="true" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button">Gestion</a>
+							<div class="dropdown-menu" style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(0px, 38px, 0px);" x-placement="bottom-start">
+								<a class="dropdown-item" href="{{ path('admin_usersList') }}">Gestion des utilisateurs</a>
+								<a class="dropdown-item" href="{{ path('admin_carsList') }}">Gestion des véhicules</a>
+							</div>
+						</li>
+					</ul>
+					<ul class="navbar-nav ml-auto">
+						<li class="nav-item">
+							<a class="nav-link" href="{{ path('help') }}">
+								<i class="fas fa-info-circle"></i>
+								Aide
+							</a>
+						</li>
+						<li class="nav-item">
+							<a href="{{ path('admin_profil') }}" class="nav-link">
+								<i class="fas fa-user"></i>
+								<span id="adminNavItem">
+									{{ app.user.firstName }}
+									{{ app.user.lastName }}</span>
+							</a>
+						</li>
+						<li class="nav-item">
+							<a href="{{ path('security_logout') }}" class="nav-link">
+								Se déconnecter
+								<i class="fas fa-sign-out-alt"></i>
+							</a>
+						</li>
+					</ul>
+				</div>
+			</nav>
+		{% else %}
+			<nav class="navbar navbar-expand-lg navbar-light bg-light">
+				<a class="navbar-brand" href="#">
+					<a class="navbar-brand" href="#"><img id="visitor_logo" alt="Logo" src="images/logo.png"/></a>
+				</a>
+				<button aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler" data-target="#navbarColor01" data-toggle="collapse" type="button">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarColor01">
+					<ul class="navbar-nav mr-auto">
+						<li class="nav-item">
+							<a class="nav-link" href="{{ path('security_home') }}">
+								<i class="fas fa-list"></i>
+								Liste des véhicules
+							</a>
+						</li>
+					</ul>
+					<ul class="navbar-nav ml-auto">
+						<li class="nav-item">
+							<a class="nav-link" href="{{ path('help') }}">
+								<i class="fas fa-info-circle"></i>
+								Aide
+							</a>
+						</li>
+						<li class="nav-item">
+							<a href="{{ path('security_registration') }}" class="nav-link">
+								<i class="far fa-list-alt"></i>
+								Inscription
+							</a>
+						</li>
+						<li class="nav-item">
+							<a href="{{ path('security_login') }}" class="nav-link">
+								<i class="fas fa-sign-in-alt"></i>
+								Connexion
+							</a>
+						</li>
+					</ul>
+				</div>
+			</nav>
+		{% endif %}
+		<div id="flashContainer" class="container">
+			{% block flash %}
+				{% for flash_message in app.session.flashbag.get('success') %}
+					<div class="container-fluid alert alert-success fixed-top rounded-0 text-center" role="alert">{{ flash_message }}</div>
+				{% endfor %}
+				{% for flash_message in app.session.flashbag.get('info') %}
+					<div class="container-fluid alert alert-info fixed-top rounded-0 text-center" role="alert">{{ flash_message }}</div>
+				{% endfor %}
+				{% for flash_message in app.session.flashbag.get('warning') %}
+					<div class="container-fluid alert alert-warning fixed-top rounded-0 text-center" role="alert">{{ flash_message }}</div>
+				{% endfor %}
+				{% for flash_message in app.session.flashbag.get('danger') %}
+					<div class="container-fluid alert alert-danger fixed-top rounded-0 text-center" role="alert">{{ flash_message }}</div>
+				{% endfor %}
+			{% endblock %}
+			{% block body %}{% endblock %}
+		</div>
+		<footer class="footer">
+			<h5 class="text-center" style="padding-top : 1em;">© Decroos Christophe 2021</h5>
+		</footer>
+		<script type="text/javascript">
+			$(document).ready(function () {
+$(document).ajaxStart(function () {
+$("#overlay").fadeIn(300);
+});
+$(document).ajaxStop(function () {
+$("#overlay").fadeOut(300);
+});
+$(".alert").delay(5000).slideUp(600);
+});
+		</script>
+		{% block javascripts %}{% endblock %}
+	</body>
+</html>

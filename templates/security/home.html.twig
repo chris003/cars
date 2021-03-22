@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des véhicules
+{% endblock %}
+
+{% block body %}
+	<div class="container mt-4">
+		<h2 class="display-6 text-center">Liste des véhicules</h2>
+		<hr class="my-4">
+		<div><input class="form-control" id="carSearch" type="text" placeholder="Recherche de voiture..."></div>
+		<br/>
+		<div id="divMemberHome"></div>
+	</div>
+	<br/>
+</div>{% endblock %}{% block javascripts %}
+<script type="text/javascript">
+	$(document).ready(function () {
+$.ajax({
+url: "/getRents",
+type: "GET",
+success: function (response) {
+for (var i = 0; i < response.length; i++) {
+$('#divMemberHome').append('<div class="row carList" style="padding-bottom: 1em;"><div class="col-2"></div><div class="col-8 border" style="padding-left: 2em; padding-right: 2em; padding-bottom: 1em;"><div class="row"><div class="col-12"><h3 class="carName" class="font-weight-bold">' + response[i].brand + ' ' + response[i].model + '</h3></div></div><div class="row"><div class="col-7"><img src="/images/cars/' + response[i].imageName + '" alt="' + response[i].brand + response[i].model + '" width="100%" height="177em"></div><div class="col-5"><div class="row"><div class="col-6"><span><img src="images/seats_grey.png">&nbsp;&nbsp;' + response[i].seats + '</span></div><div class="col-6"><img src="images/gears_grey.png">&nbsp;&nbsp;' + response[i].transmission + '</div></div><br /><div class="row"><div class="col-6"><img src="images/doors_grey.png">&nbsp;&nbsp;' + response[i].doors + '</div><div class="col-6"><img src="images/emission_grey.png">&nbsp;&nbsp;' + response[i].emission + '&nbsp;g/km</div></div><div class="row" style="padding-top : 1em; padding-left : 1em;"><h2>' + new Intl.NumberFormat('de-DE', {
+style: 'currency',
+currency: 'EUR'
+}).format(response[i].price) + '</h2></div><div class="row" style="padding-left : 1em;"><a class="btn btn-success" href="{{ path('security_login') }}">Réserver</a></div></div></div></div><div class="col-2"></div></div>');
+}
+},
+error: function (response) {
+alert(response.message);
+},
+dataType: 'json'
+});
+$("#carSearch").on("keyup", function () {
+var value = $(this).val().toLowerCase();
+$(".carList").filter(function () {
+$(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+});
+});
+setInterval(function () {
+$.ajax({
+url: "/getRents",
+type: "GET",
+success: function (response) {
+$('#divMemberHome').empty();
+for (var i = 0; i < response.length; i++) {
+$('#divMemberHome').append('<div class="row carList" style="padding-bottom: 1em;"><div class="col-2"></div><div class="col-8 border" style="padding-left: 2em; padding-right: 2em; padding-bottom: 1em;"><div class="row"><div class="col-12"><h3 class="carName" class="font-weight-bold">' + response[i].brand + ' ' + response[i].model + '</h3></div></div><div class="row"><div class="col-7"><img src="/images/cars/' + response[i].imageName + '" alt="' + response[i].brand + response[i].model + '" width="100%" height="177em"></div><div class="col-5"><div class="row"><div class="col-6"><span><img src="images/seats_grey.png">&nbsp;&nbsp;' + response[i].seats + '</span></div><div class="col-6"><img src="images/gears_grey.png">&nbsp;&nbsp;' + response[i].transmission + '</div></div><br /><div class="row"><div class="col-6"><img src="images/doors_grey.png">&nbsp;&nbsp;' + response[i].doors + '</div><div class="col-6"><img src="images/emission_grey.png">&nbsp;&nbsp;' + response[i].emission + '&nbsp;g/km</div></div><div class="row" style="padding-top : 1em; padding-left : 1em;"><h2>' + new Intl.NumberFormat('de-DE', {
+style: 'currency',
+currency: 'EUR'
+}).format(response[i].price) + '</h2></div><div class="row" style="padding-left : 1em;"><a class="btn btn-success" href="{{ path('security_login') }}">Réserver</a></div></div></div></div><div class="col-2"></div></div>');
+}
+},
+error: function (response) {
+alert(response.message);
+},
+global: false, 
+dataType: 'json'
+});
+}, 10000);
+});
+</script>{% endblock %}

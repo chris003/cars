@@ -1,0 +1,72 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	Détail du véhicule "{{ car.brand }}
+	{{ car.model }}"
+{% endblock %}
+
+{% block body %}
+	<div class="container mt-4" id="divCarDetail">
+		<h2 class="display-6 text-center">Détail du véhicule "<span class="title">{{ car.brand }}
+				{{ car.model }}</span>"</h2>
+		<img id="carImageFile" style="display: block;margin-left: auto;margin-right: auto;" src="/images/cars/{{ car.imageName }}" alt="{{ car.brand }} {{ car.model }}" width="500px" heigth="250px"/>
+		<div class="modal">
+			<span class="close">&times;</span>
+			<img class="modal-content" id="modalImg">
+			<div id="caption"></div>
+		</div>
+		<hr class="my-4">
+		{{ form_start(formCar) }}
+		{{ form_row(formCar.brand, {'label': 'Marque'}) }}
+		{{ form_row(formCar.model, {'label': 'Model'}) }}
+		{{ form_row(formCar.doors, {'label': 'Portes'}) }}
+		{{ form_row(formCar.transmission, {'label': 'Transmission'}) }}
+		{{ form_row(formCar.seats, {'label': 'Sièges'}) }}
+		{{ form_row(formCar.emission, {'label': 'Emission'}) }}
+		{{ form_row(formCar.price, {'label': 'Prix'}) }}
+		{{ form_row(formCar.imageFile, {'label': 'Image'}) }}
+		<button class="btn btn-success" type="submit" id="carEditFormSubmit">Modifier</button>
+		<a class="btn btn-info" href="{{ path('admin_carsList') }}" role="button">Retour</a>
+		{{ form_end(formCar)}}
+	</div>
+{% endblock %}
+
+{% block javascripts %}
+	<script type="text/javascript">
+		$(document).ready(function () {
+$('#car_imageFile_file').attr("required", false);
+$("form").submit(function () {
+var fd = new FormData(document.forms.namedItem("car"));
+$.ajax({
+url: "editCar",
+type: "POST",
+data: fd,
+processData: false,
+contentType: false,
+success: function (response) {
+$('#flashContainer').append('<div class="container-fluid alert ' + response.alert + ' fixed-top rounded-0 text-center" role="alert">' + response.message + '</div>');
+$('.modal').modal('hide');
+$(".alert").delay(5000).slideUp(600);
+if (response.alert == 'alert-success') {
+document.title = 'Détail du véhicule "' + response.carBrand + ' ' + response.carModel + '"';
+$('.title').text(response.carBrand + ' ' + response.carmodel);
+$('#carImageFile').attr("src", "/images/cars/" + response.carImageName);
+}
+},
+error: function (response) {
+alert(response.message);
+}
+});
+return false;
+});
+$("input[type=file]").change(function () {
+var fieldVal = $(this).val();
+if (fieldVal != undefined || fieldVal != "") {
+$(this).next(".custom-file-label").text(fieldVal);
+}
+});
+$(".custom-file").next().remove(); // For remove checkbox Vich Uploader
+$(".form-check").remove();
+});
+	</script>
+{% endblock %}

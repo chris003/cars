@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Profil de
+	{{ app.user.firstName}}
+	{{ app.user.lastName }}
+{% endblock %}
+
+{% block body %}
+	<div class="container mt-4" id="divMyOrderFormsList">
+		<h2 id="pageTitle" class="display-6 text-center">Profil de
+			{{ app.user.firstName}}
+			{{ app.user.lastName }}</h2>
+		<hr class="my-4">
+		{{ form_start(formUser) }}
+		{{ form_row(formUser.email, {'label': 'Email'}) }}
+		{{ form_row(formUser.firstName, {'label': 'Prénom'}) }}
+		{{ form_row(formUser.lastName, {'label': 'Nom'}) }}
+		{{ form_row(formUser.phone, {'label': 'Téléphone'}) }}
+		{{ form_row(formUser.street, {'label': 'Rue'}) }}
+		{{ form_row(formUser.streetNum, {'label': 'Numéro de rue'}) }}
+		{{ form_row(formUser.postalCode, {'label': 'Code Postal'}) }}
+		{{ form_row(formUser.locality, {'label': 'Localité'}) }}
+		{{ form_row(formUser.country, {'label': 'Pays'}) }}
+		<button class="btn btn-success" type="submit" id="profilFormSubmit">Modifier</button>
+		<a class="btn btn-info" href="{{ path('admin_password') }}" role="button">Modifier le mot de passe</a>
+		{{ form_end(formUser)}}
+	</div>
+{% endblock %}
+
+{% block javascripts %}
+	<script type="text/javascript">
+		$(document).ready(function () {
+$("form").submit(function () {
+$.ajax({
+url: "profil",
+type: "POST",
+data: $("form").serialize(),
+success: function (response) {
+$('#flashContainer').append('<div class="container-fluid alert ' + response.alert + ' fixed-top rounded-0 text-center" role="alert">' + response.message + '</div>');
+$('title').html('Profil de' + response.profilFirstName + ' ' + response.profilLastName);
+$('#pageTitle').html('Profil de ' + response.profilFirstName + ' ' + response.profilLastName);
+$('#adminNavItem').html();
+$('#adminNavItem').text(response.profilFirstName + ' ' + response.profilLastName);
+$('.modal').modal('hide');
+$(".alert").delay(5000).slideUp(600);
+},
+error: function (response) {
+alert(response.message);
+}
+});
+return false;
+});
+});
+	</script>
+{% endblock %}

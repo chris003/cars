@@ -1,0 +1,72 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Calendrier des réservations du véhicule
+	{{ car.brand }}
+	{{ car.model }}
+{% endblock %}
+
+{% block body %}
+	<div class="container mt-4" id="divCarRents">
+		<h2 class="display-6 text-center">Calendrier des réservations du véhicule
+			{{ car.brand }}
+			{{ car.model }}</h2>
+		<hr class="my-4">
+		<br/>
+		<div id='calendar'></div>
+		<div style='clear:both'></div>
+	</div>
+{% endblock %}
+
+{% block javascripts %}
+	<script type="text/javascript">
+
+		$(document).ready(function () {
+var calendar = $('#calendar').fullCalendar({
+buttonText: {
+today: 'aujourd\'hui',
+month: 'mois',
+week: 'semaine',
+day: 'jour',
+list: 'liste'
+},
+locale: 'fr',
+editable: false,
+header: {
+left: 'prev,next today',
+center: 'title',
+right: 'month,agendaWeek,agendaDay'
+},
+events: {
+url: '/admin/' + {{ car.id }} + '/getCarRents',
+type: 'GET',
+global: false
+},
+eventClick: function (event) {
+if (confirm("Etes-vous sûr de vouloir supprimer cet événement ?")) {
+var id = event.id;
+$.ajax({
+url: "/admin/removeRent",
+type: "POST",
+global: false,
+data: {
+id: id
+},
+success: function (response) {
+calendar.fullCalendar('refetchEvents');
+$('#flashContainer').append('<div class="container-fluid alert ' + response.alert + ' fixed-top rounded-0 text-center" role="alert">' + response.message + '</div>');
+$('.modal').modal('hide');
+$(".alert").delay(5000).slideUp(300);
+},
+error: function (response) {
+alert(response.message);
+}
+})
+}
+}
+});
+setInterval(function () {
+calendar.fullCalendar('refetchEvents');
+}, 10000);
+});
+	</script>
+{% endblock %}

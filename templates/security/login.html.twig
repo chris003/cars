@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion
+{% endblock %}
+
+{% block body %}
+	<div class="container mt-4" id="divMyOrderFormsList">
+		<h2 class="display-6 text-center">Connexion</h2>
+		<hr class="my-4">
+		{% if error %}
+			<div class="alert alert-danger">
+				<ul class="list-unstyled mb-0">
+					<li>
+						<span class="initialism form-error-icon badge badge-danger">Erreur</span>
+						<span class="form-error-message">Identifiants invalides</span>
+					</li>
+				</ul>
+			</div>
+		{% endif %}
+		<form action="{{ path('security_login')}}" method="post">
+			<div class="form-group">
+				<input class="form-control" name="_username" placeholder="Login ..." value="{{ last_username }}" required type="text">
+			</div>
+			<div class="form-group">
+				<input class="form-control" name="_password" placeholder="Mot de passe ..." required type="password">
+			</div>
+			<div class="form-group">
+				<button class="btn btn-success" type="submit">Connexion</button>
+			</div>
+		</form>
+	</div>
+{% endblock %}

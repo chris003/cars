@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	Ajouter un véhicule
+{% endblock %}
+
+{% block body %}
+	<div class="container mt-4" id="divCarDetail">
+		<h2 class="display-6 text-center">Ajouter un véhicule</h2>
+		<hr class="my-4">
+		{{ form_start(formCar) }}
+		{{ form_row(formCar.brand, {'label': 'Marque'}) }}
+		{{ form_row(formCar.model, {'label': 'Model'}) }}
+		{{ form_row(formCar.doors, {'label': 'Portes'}) }}
+		{{ form_row(formCar.transmission, {'label': 'Transmission'}) }}
+		{{ form_row(formCar.seats, {'label': 'Sièges'}) }}
+		{{ form_row(formCar.emission, {'label': 'Emission'}) }}
+		{{ form_row(formCar.price, {'label': 'Prix'}) }}
+		{{ form_row(formCar.imageFile, {'label': 'Image'}) }}
+		<button class="btn btn-success" type="submit" id="carAddFormSubmit">Valider</button>
+        <a class="btn btn-info" href="{{ path('admin_carsList') }}" role="button">Retour</a>
+		{{ form_end(formCar)}}
+	</div>
+{% endblock %}
+
+{% block javascripts %}
+	<script type="text/javascript">
+		$(document).ready(function () {
+$("form").submit(function () {
+var fd = new FormData(document.forms.namedItem("car"));
+$.ajax({
+  url: "addCar",
+  type: "POST",
+  data: fd,
+  processData: false,
+  contentType: false,
+  success: function (response) {
+            $('#flashContainer').append('<div class="container-fluid alert ' + response.alert + ' fixed-top rounded-0 text-center" role="alert">' + response.message + '</div>');
+			$('.modal').modal('hide');
+			$(".alert").delay(5000).slideUp(600);
+	    },
+  error: function (response) {
+            alert(response.message);
+        }
+});
+return false;
+});
+$("input[type=file]").change(function () {
+  var fieldVal = $(this).val();
+  if (fieldVal != undefined || fieldVal != "") {
+    $(this).next(".custom-file-label").text(fieldVal);
+  }
+});
+});
+	</script>
+{% endblock %}

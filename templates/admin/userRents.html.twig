@@ -1,0 +1,139 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Calendrier des réservations de
+	{{ user.firstName}}
+	{{ user.lastName }}
+{% endblock %}
+
+{% block body %}
+	<div class="container mt-4" id="divCarRents">
+		<h2 class="display-6 text-center">Calendrier des réservations de
+			{{ user.firstName}}
+			{{ user.lastName }}</h2>
+		<hr class="my-4">
+		<div>
+			<h4>Pour faire une réservation, veuillez choisir un véhicule&nbsp;
+				<select id="carsSelect">
+				</select>
+			</h4>
+		</div>
+		<br/>
+		<div id='calendar'></div>
+		<div style='clear:both'></div>
+	</div>
+{% endblock %}
+{% block javascripts %}
+	<script type="text/javascript">
+		$(document).ready(function () {
+$.ajax({
+url: "/admin/getCars",
+type: "GET",
+success: function (response) {
+for (var i = 0; i < response.length; i++) {
+$('#carsSelect').append('<option value="' + response[i].id + '">' + response[i].brand + ' ' + response[i].model + ' - ' + response[i].doors + ' portes - ' + response[i].seats + ' sièges</option>');
+}
+},
+error: function (response, status) {
+alert(response.message);
+},
+dataType: 'json'
+});
+var calendar = $('#calendar').fullCalendar({
+buttonText: {
+today: 'aujourd\'hui',
+month: 'mois',
+week: 'semaine',
+day: 'jour',
+list: 'liste'
+},
+locale: 'fr',
+editable: false,
+header: {
+left: 'prev,next today',
+center: 'title',
+right: 'month,agendaWeek,agendaDay'
+},
+events: {
+url: '/admin/' + {{ user.id }} + '/getUserRents',
+type: 'GET',
+global: false
+},
+selectable: true,
+selectAllow: function (selectInfo) {
+return moment().diff(selectInfo.start) <= 0
+},
+selectOverlap: function (event) {
+return event.rendering === 'background';
+},
+selectHelper: true,
+select: function (start, end, allDay) {
+var confirmation = confirm("Veuillez confirmer votre réservation");
+if (confirmation) {
+var start = $.fullCalendar.formatDate(start, "Y-MM-DD HH:mm:ss");
+var end = $.fullCalendar.formatDate(end, "Y-MM-DD HH:mm:ss");
+var id = $("#carsSelect").val();
+var userId = {{ user.id }};
+$.ajax({
+url: "/admin/" + id + "/carRentAdding",
+type: "POST",
+data: {
+start: start,
+end: end,
+userId: userId
+},
+success: function (response) {
+calendar.fullCalendar('refetchEvents');
+$('#flashContainer').append('<div class="container-fluid alert ' + response.alert + ' fixed-top rounded-0 text-center" role="alert">' + response.message + '</div>');
+$('.modal').modal('hide');
+$(".alert").delay(5000).slideUp(300);
+},
+error: function (response) {
+alert(response.message);
+}
+})
+}
+},
+eventClick: function (event) {
+if (confirm("Etes-vous sûr de vouloir supprimer cet événement ?")) {
+var id = event.id;
+$.ajax({
+url: "/admin/removeRent",
+type: "POST",
+global: false,
+data: {
+id: id
+},
+success: function (response) {
+calendar.fullCalendar('refetchEvents');
+$('#flashContainer').append('<div class="container-fluid alert ' + response.alert + ' fixed-top rounded-0 text-center" role="alert">' + response.message + '</div>');
+$('.modal').modal('hide');
+$(".alert").delay(5000).slideUp(300);
+},
+error: function (response) {
+alert(response.message);
+}
+})
+}
+}
+});
+setInterval(function () {
+$.ajax({
+url: "/admin/getCars",
+type: "GET",
+global: false,
+success: function (response) {
+$("#carsSelect").empty();
+for (var i = 0; i < response.length; i++) {
+$('#carsSelect').append('<option value="' + response[i].id + '">' + response[i].brand + ' ' + response[i].model + ' - ' + response[i].doors + ' portes - ' + response[i].seats + ' sièges</option>');
+}
+},
+error: function (response) {
+alert(response.message);
+},
+dataType: 'json'
+});
+calendar.fullCalendar('refetchEvents');
+}, 10000);
+});
+	</script>
+{% endblock %}

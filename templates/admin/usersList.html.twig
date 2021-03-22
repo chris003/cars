@@ -1,0 +1,212 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des utilisateurs ({{ usersNbr }})
+{% endblock %}
+
+
+{% block body %}
+
+	<div class="container mt-4" id="divUsersList">
+
+		<h2 class="display-6 text-center" id="pageTitle">Liste des utilisateurs (<span class="usersNbr">{{ usersNbr }}</span>)<a class="btn btn-success float-right" href="{{ path('admin_addUser') }}">Ajouter un utlisateur</a>
+		</h2>
+
+		<hr class="my-4">
+
+		<small>
+			<table class="table table-stripped table-bordered table-hover" style="width: 100%" id="dtUsersList">
+				<thead>
+					<tr>
+						<th>Nom</th>
+						<th>Prénom</th>
+						<th>E-mail</th>
+						<th>Téléphone</th>
+						<th>Adresse</th>
+						<th class="text-center">Réservations</th>
+						<th class="text-center">Détail</th>
+						<th class="text-center">Supprimer</th>
+					</tr>
+				</thead>
+				<tbody></tbody>
+				<tfoot>
+					<tr>
+						<th>Nom</th>
+						<th>Prénom</th>
+						<th>E-mail</th>
+						<th>Téléphone</th>
+						<th>Adresse</th>
+						<th class="text-center">Réservations</th>
+						<th class="text-center">Détail</th>
+						<th class="text-center">Supprimer</th>
+					</tr>
+				</tfoot>
+			</tbody>
+		</table>
+	</small>
+
+	<div class="modal fade" id="removingModal" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h4 class="modal-title" id="removeModalTitleTxt"></h4>
+					<button class="close" data-dismiss="modal" type="button">&times;</button>
+				</div>
+				<div class="modal-body">
+					<p id="removeModalBodyTxt"></p>
+				</div>
+				<div class="modal-footer">
+					<a id="userDeletingBtn" href="#" class="btn btn-primary" type="button">Confirmer</a>
+					<a class="btn btn-secondary" data-dismiss="modal" type="button">Annuler</a>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</div>{% endblock %}{% block javascripts %}
+
+<script type="text/javascript">
+	$(document).ready(function () {
+
+
+$('#dtUsersList thead tr').clone(true).appendTo('#dtUsersList thead');
+
+$('#dtUsersList thead tr:eq(1) th').each(function (i) {
+if (i < 5) {
+var title = $(this).text();
+$(this).html('<input placeholder="Filtre" style="width: 100%" type="text"/>');
+
+
+$('input', this).on('keyup change', function () {
+if (table.column(i).search() !== this.value) {
+table.column(i).search(this.value).draw();
+}
+});
+} else {
+$(this).html('');
+}
+});
+
+var table = $('#dtUsersList').DataTable({
+"order": [
+[
+0, "asc"
+],
+[
+1, "asc"
+]
+],
+"bAutoWidth": false,
+orderCellsTop: true,
+ajax: {
+url: "getUsers",
+global: false,
+
+dataSrc: ""
+},
+"columns": [
+
+{
+"data": "lastName"
+},
+{
+"data": "firstName"
+},
+{
+"data": "email"
+},
+{
+"data": "phone",
+className: 'dt-body-right',
+"visible": false
+}, {
+"render": function (data, type, row) {
+return row.street + " " + row.streetNum + ", " + row.postalCode + " " + row.locality + ", " + row.country;
+},
+"visible": false
+}, {
+"render": function (data, type, row, meta) {
+return '<a class="btn btn-sm btn-primary" href="/admin/' + row.id + '/userRents">Réservations</a>';
+},
+className: 'dt-body-center',
+"width": "8%",
+"orderable": false
+}, {
+"render": function (data, type, row, meta) {
+return '<a class="btn btn-sm btn-primary" href="/admin/' + row.id + '/editUser">Détail</a>';
+},
+className: 'dt-body-center',
+"width": "8%",
+"orderable": false
+}, {
+"data": "id",
+createdCell: function (td, cellData, rowData, row, col) {
+var button = $('<a class="btn btn-sm btn-danger removingModal" data-target="#removingModal" data-toggle="modal" href="#">Supprimer</a>').click(function () {
+$('#removeModalTitleTxt').text('Suppression de l\'utilisateur "' + rowData.firstName + ' ' + rowData.lastName + '"');
+$('#removeModalBodyTxt').text('Etes-vous sûr de vouloir supprimer l\'utilisateur "' + rowData.firstName + ' ' + rowData.lastName + '" ?');
+
+$('#userDeletingBtn').click(function () {
+$.ajax({
+url: "removeUser",
+type: "POST",
+data: { userId: rowData.id },
+success: function (response) {
+$('#flashContainer').append('<div class="container-fluid alert ' + response.alert + ' fixed-top rounded-0 text-center" role="alert">' + response.message + '</div>');
+if (response.alert == 'alert-success') {
+$('.usersNbr').text(table.data().count() - 1);
+document.title = 'Liste des utilisateurs (' + table.data().count() + ')';
+table.ajax.reload();
+}
+$('.modal').modal('hide');
+$(".alert").delay(5000).slideUp(600);
+},
+error: function (response) {
+alert(response.message);
+}
+});
+});
+});
+
+$(td).html(button);
+
+},
+
+className: 'dt-body-center',
+"width": "8%",
+"orderable": false
+}
+],
+"language": {
+"sProcessing": "Traitement en cours ...",
+"sLengthMenu": "Afficher _MENU_ lignes",
+"sZeroRecords": "Aucun résultat trouvé",
+"sEmptyTable": "Aucune donnée disponible",
+"sInfo": "Lignes _START_ à _END_ sur _TOTAL_",
+"sInfoEmpty": "Aucune ligne affichée",
+"sInfoFiltered": "(Filtrer un maximum de _MAX_)",
+"sInfoPostFix": "",
+"sSearch": "Chercher:",
+"sUrl": "",
+"sInfoThousands": ",",
+"sLoadingRecords": "Chargement...",
+"oPaginate": {
+"sFirst": "Premier",
+"sLast": "Dernier",
+"sNext": "Suivant",
+"sPrevious": "Précédent"
+},
+"oAria": {
+"sSortAscending": ": Trier par ordre croissant",
+"sSortDescending": ": Trier par ordre décroissant"
+}
+}
+
+});
+
+
+setInterval(function () {
+table.ajax.reload();
+document.title = 'Liste des utilisateurs (' + table.data().count() + ')';
+$('.usersNbr').text(table.data().count());
+}, 10000);
+});
+</script>{% endblock %}

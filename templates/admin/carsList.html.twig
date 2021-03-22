@@ -1,0 +1,234 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des véhicules ({{ carsNbr }})
+{% endblock %}
+
+
+{% block body %}
+
+	<div class="container mt-4" id="divCarsList">
+
+		<h2 class="display-6 text-center" id="pageTitle">Liste des véhicules (<span class="usersNbr">{{ carsNbr }}</span>)<a class="btn btn-success float-right" href="{{ path('admin_addCar') }}">Ajouter un véhicule</a>
+		</h2>
+
+		<hr class="my-4">
+
+		<small>
+			<table class="table table-stripped table-bordered table-hover" style="width: 100%" id="dtCarsList">
+				<thead>
+					<tr>
+						<th>Image</th>
+						<th>Marque</th>
+						<th>Modèle</th>
+						<th>Portes</th>
+						<th>Transmission</th>
+						<th>Sièges</th>
+						<th>Emission</th>
+						<th>Prix</th>
+						<th class="text-center">Réservations</th>
+						<th class="text-center">Détail</th>
+						<th class="text-center">Supprimer</th>
+					</tr>
+				</thead>
+				<tbody></tbody>
+				<tfoot>
+					<tr>
+						<th>Image</th>
+						<th>Marque</th>
+						<th>Modèle</th>
+						<th>Portes</th>
+						<th>Transmission</th>
+						<th>Sièges</th>
+						<th>Emission</th>
+						<th>Prix</th>
+						<th class="text-center">Réservations</th>
+						<th class="text-center">Détail</th>
+						<th class="text-center">Supprimer</th>
+					</tr>
+				</tfoot>
+			</tbody>
+		</table>
+	</small>
+
+	<div class="modal fade" id="removingModal" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h4 class="modal-title" id="removeModalTitleTxt"></h4>
+					<button class="close" data-dismiss="modal" type="button">&times;</button>
+				</div>
+				<div class="modal-body">
+					<p id="removeModalBodyTxt"></p>
+				</div>
+				<div class="modal-footer">
+					<a id="carDeletingBtn" href="#" class="btn btn-primary" type="button">Confirmer</a>
+					<a class="btn btn-secondary" data-dismiss="modal" type="button">Annuler</a>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</div>{% endblock %}{% block javascripts %}
+
+<script type="text/javascript">
+	$(document).ready(function () {
+
+$('#dtCarsList thead tr').clone(true).appendTo('#dtCarsList thead');
+
+$('#dtCarsList thead tr:eq(1) th').each(function (i) {
+if (i > 0 && i < 8) {
+var title = $(this).text();
+$(this).html('<input placeholder="Filtre" style="width: 100%" type="text"/>');
+
+
+$('input', this).on('keyup change', function () {
+if (table.column(i).search() !== this.value) {
+table.column(i).search(this.value).draw();
+}
+});
+} else {
+$(this).html('');
+}
+});
+
+var table = $('#dtCarsList').DataTable({
+"order": [
+[
+1, "asc"
+],
+[
+2, "asc"
+]
+],
+"bAutoWidth": false,
+orderCellsTop: true,
+ajax: {
+url: "getCars",
+global: false,
+
+dataSrc: ""
+},
+"columns": [
+
+{
+"render": function (data, type, row, meta) {
+return '<img src="/images/cars/' + row.imageName + '" alt="' + row.brand + ' ' + row.model + '" width="100%" height="100"></div>';
+},
+"width": "15%",
+className: 'dt-body-center',
+"orderable": false
+},
+{
+"data": "brand"
+},
+{
+"data": "model"
+},
+{
+"data": "doors",
+className: 'dt-body-right',
+"visible": false
+}, {
+"data": "transmission",
+className: 'dt-body-right',
+"visible": false
+}, {
+"data": "seats",
+className: 'dt-body-right',
+"visible": false
+}, {
+"data": "emission",
+className: 'dt-body-right',
+"visible": false
+}, {
+"data": "price",
+"width": "12%",
+"render": $.fn.dataTable.render.number('.', ',', 2, '€'),
+className: 'dt-body-right'
+}, {
+"render": function (data, type, row, meta) {
+return '<a class="btn btn-sm btn-primary" href="/admin/' + row.id + '/carRents">Réservations</a>';
+},
+className: 'dt-body-center',
+"width": "8%",
+"orderable": false
+}, {
+"render": function (data, type, row, meta) {
+return '<a class="btn btn-sm btn-primary" href="/admin/' + row.id + '/editCar">Détail</a>';
+},
+className: 'dt-body-center',
+"width": "8%",
+"orderable": false
+}, {
+"data": "id",
+createdCell: function (td, cellData, rowData, row, col) {
+var button = $('<a class="btn btn-sm btn-danger removingModal" data-target="#removingModal" data-toggle="modal" href="#">Supprimer</a>').click(function () {
+$('#removeModalTitleTxt').text('Suppression du véhicule "' + rowData.brand + ' ' + rowData.model + '"');
+$('#removeModalBodyTxt').text('Etes-vous sûr de vouloir supprimer le véhicule "' + rowData.brand + ' ' + rowData.model + '" ?');
+
+$('#carDeletingBtn').click(function () {
+$.ajax({
+url: "removeCar",
+type: "POST",
+data: { carId: rowData.id },
+success: function (response) {
+$('#flashContainer').append('<div class="container-fluid alert ' + response.alert + ' fixed-top rounded-0 text-center" role="alert">' + response.message + '</div>');
+if (response.alert == 'alert-success') {
+$('.carsNbr').text(table.data().count() - 1);
+document.title = 'Liste des véhicules (' + table.data().count() + ')';
+table.ajax.reload();
+}
+$('.modal').modal('hide');
+$(".alert").delay(5000).slideUp(600);
+},
+error: function (response) {
+alert(response.message);
+}
+});
+});
+});
+
+$(td).html(button);
+
+},
+
+className: 'dt-body-center',
+"width": "8%",
+"orderable": false
+}
+],
+"language": {
+"sProcessing": "Traitement en cours ...",
+"sLengthMenu": "Afficher _MENU_ lignes",
+"sZeroRecords": "Aucun résultat trouvé",
+"sEmptyTable": "Aucune donnée disponible",
+"sInfo": "Lignes _START_ à _END_ sur _TOTAL_",
+"sInfoEmpty": "Aucune ligne affichée",
+"sInfoFiltered": "(Filtrer un maximum de _MAX_)",
+"sInfoPostFix": "",
+"sSearch": "Chercher:",
+"sUrl": "",
+"sInfoThousands": ",",
+"sLoadingRecords": "Chargement...",
+"oPaginate": {
+"sFirst": "Premier",
+"sLast": "Dernier",
+"sNext": "Suivant",
+"sPrevious": "Précédent"
+},
+"oAria": {
+"sSortAscending": ": Trier par ordre croissant",
+"sSortDescending": ": Trier par ordre décroissant"
+}
+}
+
+});
+
+setInterval(function () {
+table.ajax.reload();
+document.title = 'Liste des véhicules (' + table.data().count() + ')';
+$('.carsNbr').text(table.data().count());
+}, 10000);
+
+});
+</script>{% endblock %}
